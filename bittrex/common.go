@@ -2,9 +2,7 @@ package bittrex
 
 import (
 	"encoding/json"
-
-	"github.com/juju/errors"
-
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"net/http"
@@ -46,7 +44,7 @@ func apiCall(Version, Visibility, Entity, Feature string, GetParameters *publicP
 	URL := fmt.Sprintf("%s/v%s/%s/%s/%s", BaseURL, Version, Visibility, Entity, Feature)
 	req, err := http.NewRequest("GET", URL, nil)
 	if err != nil {
-		return nil, errors.Annotatef(err, "%s - URL: %s", Feature, URL)
+		return nil, fmt.Errorf("%s. Feature: %s, URL: %s", err.Error(), Feature, URL)
 	}
 
 	req.Header.Set("Accept", "application/json")
