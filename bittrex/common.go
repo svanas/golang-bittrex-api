@@ -40,7 +40,7 @@ func SetCustomHTTPClient(value http.Client) {
 }
 
 // apiCall performs a generic API call.
-func apiCall(Version, Visibility, Entity, Feature string, GetParameters *publicParams, PostParameters *privateParams) (*json.RawMessage, error) {
+func apiCall(Version, Visibility, Entity, Feature string, GetParameters, PostParameters map[string]string) (*json.RawMessage, error) {
 	URL := fmt.Sprintf("%s/v%s/%s/%s/%s", BaseURL, Version, Visibility, Entity, Feature)
 	req, err := http.NewRequest("GET", URL, nil)
 	if err != nil {
@@ -52,14 +52,18 @@ func apiCall(Version, Visibility, Entity, Feature string, GetParameters *publicP
 	req.Header.Add("Cache-Control", "no-store")
 	req.Header.Add("Cache-Control", "must-revalidate")
 
-	if Visibility == Public && GetParameters != nil { // Add them to query string
+	if GetParameters != nil { // Add them to query string
 		queryString := req.URL.Query()
-		GetParameters.AddToQueryString(&queryString)
+		for key, value := range GetParameters {
+			queryString.Set(key, value)
+		}
 		req.URL.RawQuery = queryString.Encode()
-	} else if Visibility == Private {
+	}
+
+	if Visibility == Private {
 		addSecurityHeaders(req.Header)
 		if PostParameters != nil {
-			PostParameters.AddToPostForm(&req.PostForm)
+			// ToDo: add post parameters to req.PostForm
 		}
 	}
 
@@ -94,14 +98,14 @@ func apiCall(Version, Visibility, Entity, Feature string, GetParameters *publicP
 // publicCall performs a call to the public bittrex API.
 //
 // It does not need API Keys.
-func publicCall(Entity, Feature string, GetParameters *publicParams) (*json.RawMessage, error) {
+func publicCall(Entity, Feature string, GetParameters map[string]string) (*json.RawMessage, error) {
 	return apiCall(APIVersion, Public, Entity, Feature, GetParameters, nil)
 }
 
 // authCall performs a call to the private bittrex API.
 //
 // It needs an Auth struct to be passed with valid Keys.
-func authCall(Entity, Feature string, PostParams *privateParams, auth Auth) (*json.RawMessage, error) {
+func authCall(Entity, Feature string, PostParams map[string]string, auth Auth) (*json.RawMessage, error) {
 	if auth.PublicKey == "" || auth.PrivateKey == "" {
 		return nil, errors.New("Cannot perform private api request without authentication keys")
 	}

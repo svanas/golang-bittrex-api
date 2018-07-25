@@ -8,6 +8,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"sort"
+	"strconv"
 	"time"
 )
 
@@ -107,10 +108,10 @@ func GetTicks(marketName, tickInterval string) (CandleSticks, error) {
 // GetMarketSummaries gets the summary of all markets.
 func GetMarketSummaries() (MarketSummaries, error) {
 	now := time.Now().Unix()
-	GetParameters := publicParams{
-		Timestamp: &now,
+	var params = map[string]string{
+		"_": strconv.FormatInt(now, 10),
 	}
-	result, err := publicCall("markets", "GetMarketSummaries", &GetParameters)
+	result, err := publicCall("markets", "GetMarketSummaries", params)
 	if err != nil {
 		return nil, err
 	}
@@ -126,12 +127,12 @@ func GetMarketSummaries() (MarketSummaries, error) {
 // GetMarketSummary gets the summary of a single market.
 func GetMarketSummary(marketName string) (*MarketSummary, error) {
 	now := time.Now().UnixNano()
-	GetParameters := publicParams{
-		MarketName: &marketName,
-		Timestamp:  &now,
+	var params = map[string]string{
+		"marketName": marketName,
+		"_":          strconv.FormatInt(now, 10),
 	}
 
-	result, err := publicCall("market", "GetMarketSummary", &GetParameters)
+	result, err := publicCall("market", "GetMarketSummary", params)
 	if err != nil {
 		return nil, err
 	}
@@ -151,12 +152,12 @@ func GetMarketSummary(marketName string) (*MarketSummary, error) {
 //     newest = index -> len(candlestick_array) - 1
 func tickFunc(marketName, tickInterval, tickFeature string) (CandleSticks, error) {
 	now := time.Now().Unix()
-	GetParameters := publicParams{
-		MarketName:   &marketName,
-		TickInterval: &tickInterval,
-		Timestamp:    &now,
+	var params = map[string]string{
+		"marketName":   marketName,
+		"tickInterval": tickInterval,
+		"_":            strconv.FormatInt(now, 10),
 	}
-	result, err := publicCall("market", tickFeature, &GetParameters)
+	result, err := publicCall("market", tickFeature, params)
 	if err != nil {
 		return nil, err
 	}
@@ -177,13 +178,13 @@ func GetOrderBook(marketName string) (OrderBook, error) {
 //GetMarkets gets all markets data.
 func GetMarkets() (Markets, error) {
 	now := time.Now().Unix()
-	GetParameters := publicParams{
-		Timestamp: &now,
+	var params = map[string]string{
+		"_": strconv.FormatInt(now, 10),
 	}
 
 	// GetMarkets uses GetMarketsSummaries now to gather its data.
 	// This is due to a 404 on GetMarkets endpoint. See Issue #28.
-	result, err := publicCall("markets", "GetMarketSummaries", &GetParameters)
+	result, err := publicCall("markets", "GetMarketSummaries", params)
 	if err != nil {
 		return nil, err
 	}
