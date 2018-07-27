@@ -190,3 +190,13 @@ type BTCPrice struct {
 	USDValue  float64
 	Timestamp time.Time
 }
+
+type Order struct {
+	OrderId        string  `json:"OrderId"`
+	MarketName     string  `json:"MarketName"`
+	MarketCurrency string  `json:"MarketCurrency"`
+	BuyOrSell      string  `json:"BuyOrSell"`
+	OrderType      string  `json:"OrderType"`
+	Quantity       float64 `json:"Quantity"`
+	Rate           float64 `json:"Rate"`
+}
